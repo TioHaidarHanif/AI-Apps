@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediksi Kanker - YOLO</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+        .container { max-width: 400px; margin: 40px auto; background: #fff; padding: 32px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        h2 { text-align: center; }
+        .result { margin-top: 24px; padding: 16px; background: #e3f7e3; border-radius: 8px; color: #1a4d1a; font-weight: bold; }
+        .error { background: #ffe3e3; color: #a11a1a; }
+        input[type="file"] { margin-bottom: 16px; }
+        button { width: 100%; padding: 10px; background: #007bff; color: #fff; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+        button:disabled { background: #aaa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Prediksi Kanker (YOLO)</h2>
+        <form id="uploadForm">
+            <input type="file" id="fileInput" accept="image/*" required />
+            <button type="submit">Prediksi</button>
+        </form>
+        <div id="result" class="result" style="display:none;"></div>
+    </div>
+    <script>
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const resultDiv = document.getElementById('result');
+
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        resultDiv.style.display = 'none';
+        resultDiv.classList.remove('error');
+        resultDiv.textContent = 'Memproses...';
+        resultDiv.style.display = 'block';
+
+        const file = fileInput.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('http://localhost:8000/predict', {
+                method: 'POST',
+                body: formData
+            });
+            if (!response.ok) throw new Error('Gagal memproses gambar');
+            const data = await response.json();
+            let kesimpulan = '';
+            if (data.detections && data.detections.length > 0) {
+                kesimpulan = `Terdeteksi kemungkinan kanker pada gambar (jumlah deteksi: ${data.detections.length}).`;
+            } else {
+                kesimpulan = 'Tidak terdeteksi kanker pada gambar.';
+            }
+            resultDiv.textContent = kesimpulan;
+            resultDiv.classList.remove('error');
+        } catch (err) {
+            resultDiv.textContent = 'Terjadi kesalahan: ' + err.message;
+            resultDiv.classList.add('error');
+        }
+    };
+    </script>
+</body>
+</html>

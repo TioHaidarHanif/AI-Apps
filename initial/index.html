@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Semantic Search</title>
+</head>
+<body>
+  <h2>Semantic Search</h2>
+  <input type="text" id="query" placeholder="Ketik pertanyaan...">
+  <button onclick="search()">Cari</button>
+
+  <ul id="results"></ul>
+
+  <script>
+    async function search() {
+      const query = document.getElementById("query").value;
+
+      const res = await fetch("http://127.0.0.1:5000/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query })
+      });
+
+      const data = await res.json();
+
+      const list = document.getElementById("results");
+      list.innerHTML = "";
+      data.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `${item.text} (score: ${item.score.toFixed(2)})`;
+        list.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
